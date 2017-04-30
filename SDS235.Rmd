@@ -1,0 +1,54 @@
+---
+title: "What do travelers care about?"
+author: "Mariama Jaiteh"
+date: "4/26/2017"
+output: html_document
+---
+```{r}
+library(RJSONIO)
+library(stringr)
+library(tm)
+library(wordcloud)
+library(readr)
+
+```
+#Load data
+```{r}
+reviews <- read_csv("~/Downloads/reviews.csv")
+```
+#combining all reviews together
+```{r}
+review_text <- paste(reviews$Content,collapse=" ")
+```
+#Setting up source and corpus
+```{r}
+review_source <- VectorSource(review_text)
+corpus <- Corpus(review_source)
+```
+#cleaning
+```{r}
+Sys.setlocale("LC_ALL", "C")
+corpus <- tm_map(corpus, function(x) iconv(x, to='UTF-8-MAC', sub='byte'))
+corpus <- tm_map(corpus,content_transformer(tolower))
+corpus <- tm_map(corpus,removePunctuation)
+corpus <- tm_map(corpus,stripWhitespace)
+corpus <- tm_map(corpus, removeWords, stopwords('english'))
+#remove stop words
+```
+
+#Making a document-term matrix
+```{r}
+dtm <- DocumentTermMatrix(corpus)
+dtm2 <- as.matrix(dtm)
+```
+#Finding the most frequent terms
+```{r}
+frequency1 <- (colSums(dtm2))
+frequency1 <- sort(frequency1, decreasing = TRUE)
+```
+#Word Cloud 
+```{r}
+words <- names(frequency1)
+wordcloud(words[1:100], frequency1[1:100])
+```
+
