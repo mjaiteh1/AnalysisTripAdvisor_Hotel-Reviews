@@ -10,15 +10,17 @@ library(stringr)
 library(tm)
 library(wordcloud)
 library(readr)
-
+library(syuzhet)
+library(dplyr)
+library(ggplot2)
 ```
 #Load data
 ```{r}
-reviews <- read_csv("~/Downloads/reviews.csv")
+reviews <- read_csv("~/Desktop/reviews1.csv")
 ```
 #combining all reviews together
 ```{r}
-review_text <- paste(reviews$Content,collapse=" ")
+review_text <- paste(reviews$Reviews__Content,collapse=" ")
 ```
 #Setting up source and corpus
 ```{r}
@@ -49,6 +51,26 @@ frequency1 <- sort(frequency1, decreasing = TRUE)
 #Word Cloud 
 ```{r}
 words <- names(frequency1)
-wordcloud(words[1:100], frequency1[1:100])
+wordcloud(words[1:120], frequency1[1:120], colors = brewer.pal(8,"Dark2"))
+```
+#fetch sentiment
+```{r} 
+sentiment <- get_nrc_sentiment(words)
+text <- cbind(words,sentiment)
+```
+#Count total sentiment
+```{r}
+totalSentiment <- data.frame(colSums(text[,c(2:11)]))
+names(totalSentiment) <- "count"
+totalSentiment <- cbind("sentiment" = rownames(totalSentiment), totalSentiment)
+rownames(totalSentiment) <- NULL
+
+```
+
+```{r}
+ggplot(data = totalSentiment, aes(x= sentiment, y = count)) + geom_bar(aes(fill= sentiment),stat = "identity") +
+  theme(legend.position = "none") +
+  xlab("sentiment") + ylab("Total Count") + ggtitle("Total Sentiment Score")
+
 ```
 
